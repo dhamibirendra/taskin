@@ -2,6 +2,10 @@
 // config files can be ConfigSlurper scripts, Java properties files, or classes
 // in the classpath in ConfigSlurper format
 
+
+def dbConfLoc =  "file:./conf/taskin.properties"
+grails.config.locations = [ "classpath:${appName}-taskin.properties",dbConfLoc ]
+
 // grails.config.locations = [ "classpath:${appName}-config.properties",
 //                             "classpath:${appName}-config.groovy",
 //                             "file:${userHome}/.grails/${appName}-config.properties",
@@ -94,3 +98,4 @@ log4j = {
 grails.plugins.springsecurity.userLookup.userDomainClassName = 'com.taskin.auth.User'
 grails.plugins.springsecurity.userLookup.authorityJoinClassName = 'com.taskin.auth.UserRole'
 grails.plugins.springsecurity.authority.className = 'com.taskin.auth.Role'
+
