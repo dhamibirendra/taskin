@@ -8,11 +8,10 @@ environments {
     development {
         dataSource {
             dbCreate = "update"
-            driverClassName = "com.mysql.jdbc.Driver"
-            url = "jdbc:mysql://localhost/taskin"
-            username = "root"
+            url = "jdbc:h2:mem:devDb;MVCC=TRUE"
+            driverClassName = "org.h2.Driver"
+            username = "sa"
             password = ""
-
             pooled = true
             properties {
                 maxActive = -1

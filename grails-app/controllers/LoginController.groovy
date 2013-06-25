@@ -1,3 +1,5 @@
+import com.taskin.auth.TimeEntry
+import com.taskin.auth.User
 import grails.converters.JSON
 
 import javax.servlet.http.HttpServletResponse
@@ -13,10 +15,9 @@ import org.springframework.security.web.WebAttributes
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 class LoginController {
-
-    /**
-     * Dependency injection for the authenticationTrustResolver.
-     */
+/**
+ * Dependency injection for the authenticationTrustResolver.
+ */
     def authenticationTrustResolver
 
     /**
@@ -30,7 +31,8 @@ class LoginController {
     def index = {
         if (springSecurityService.isLoggedIn()) {
             redirect uri: SpringSecurityUtils.securityConfig.successHandler.defaultTargetUrl
-        } else {
+        }
+        else {
             redirect action: 'auth', params: params
         }
     }
@@ -43,14 +45,44 @@ class LoginController {
         def config = SpringSecurityUtils.securityConfig
 
         if (springSecurityService.isLoggedIn()) {
-            redirect uri: "index"
+            redirect uri: config.successHandler.defaultTargetUrl
             return
         }
 
         String view = 'auth'
         String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
-        render view: view, model: [postUrl: postUrl,
+        def model = [postUrl: postUrl,
                 rememberMeParameter: config.rememberMe.parameter]
+        def today = TimeEntry.today()
+        model.today = today
+        //model.users_with_entry = listUsersWithEntry(today)
+        def all_users = User.findAllByEnabled(true).collect{ it.username.split('@')[0] }
+        //model.users_without_entry = all_users - model.users_with_entry
+        model.users_with_entry = []
+        model.users_without_entry = []
+        (0..7).each{
+            def users_with_entry
+            model.users_with_entry[it] = listUsersWithEntry(today - (it))
+            model.users_without_entry[it] = all_users - model.users_with_entry[it]
+        }
+
+        render view: view, model:model
+    }
+
+    private def listUsersWithEntry = { date ->
+        def time_entries = TimeEntry.withCriteria{
+            ge('entryDate',date)
+            lt('entryDate',date+1)
+            order('id','desc')
+        }
+        def users_with_entry = []
+        time_entries.each{
+            def name = it.createdBy.split('@')[0]
+            if(!users_with_entry.contains(name)){
+                users_with_entry.add(name)
+            }
+        }
+        return users_with_entry
     }
 
     /**
@@ -93,20 +125,25 @@ class LoginController {
         if (exception) {
             if (exception instanceof AccountExpiredException) {
                 msg = g.message(code: "springSecurity.errors.login.expired")
-            } else if (exception instanceof CredentialsExpiredException) {
+            }
+            else if (exception instanceof CredentialsExpiredException) {
                 msg = g.message(code: "springSecurity.errors.login.passwordExpired")
-            } else if (exception instanceof DisabledException) {
+            }
+            else if (exception instanceof DisabledException) {
                 msg = g.message(code: "springSecurity.errors.login.disabled")
-            } else if (exception instanceof LockedException) {
+            }
+            else if (exception instanceof LockedException) {
                 msg = g.message(code: "springSecurity.errors.login.locked")
-            } else {
+            }
+            else {
                 msg = g.message(code: "springSecurity.errors.login.fail")
             }
         }
 
         if (springSecurityService.isAjax(request)) {
             render([error: msg] as JSON)
-        } else {
+        }
+        else {
             flash.message = msg
             redirect action: 'auth', params: params
         }

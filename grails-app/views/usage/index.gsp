@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta name='layout' content='user'/>
-    <meta name='menu' content='Home'/>
+    <meta name='menu' content='Reports'/>
 </head>
 
 <body>
@@ -91,14 +91,5 @@
             <hr class="span14"/>
         </g:if>
     </g:each>
-       
-<script type='text/javascript'>
-
-	<!--
-	(function() {
-		document.forms['loginForm'].elements['j_username'].focus();
-	})();
-	// -->
-</script>
 </body>
 </html>
